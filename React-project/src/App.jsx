@@ -1,122 +1,95 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import heroImg from "./assets/hero.png";
+import Hero from "./assets/image.jpg";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "./assets/vite.svg";
+import "./App.css";
+import Button from "./Button";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const toggleImage = () => {
+    let boolean = false;
+    if (!boolean) {
+      const img = document.createElement("label");
+      img.htmlFor = "imageToggle";
+      img.innerText = "Show Image";
+      document.body.appendChild(img);
+      boolean = true;
+    }
+  };
+
+  const onclick = () => {
+    alert("Button clicked!");
+  };
+
+  const [count, setCount] = useState(0);
+  const [data, setData] = useState([]);
+
+  const fetchData = async () => {
+    const res = await fetch("https://jsonplaceholder.typicode.com/users");
+    const data = await res.json();
+    console.log(data);
+    setData(data);
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={{ textAlign: "center", backgroundColor: "lightblue" }}>
+      <h1 style={{ color: "blue", backgroundColor: "lightgray" }}>
+        Hello World
+      </h1>
+      <label htmlFor="imageToggle"></label>
+      <button
+        onClick={toggleImage}
+        style={{ marginTop: "20px", padding: "10px", fontSize: "16px" }}
+      >
+        Press to show image
+      </button>
+      <label htmlFor="imageToggle"></label>
+      <button
+        onClick={toggleImage}
+        style={{ marginTop: "20px", padding: "10px", fontSize: "16px" }}
+      >
+        Press to show image
+      </button>
+      <label>
+        <img
+          src={Hero}
+          alt="Hero"
+          style={{ width: "200px", height: "200px" }}
+        />
+      </label>
 
-      <div className="ticks"></div>
+      <p id="btn"></p>
+      <Button name={"Hellow"} onclick={onclick}></Button>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <p>Counter: {count}</p>
+      <Button name={"Increment"} onClick={() => setCount((count) => count + 1)}>
+        Increment
+      </Button>
+      <Button name={"Decrement"} onClick={() => setCount((count) => count - 1)}>
+        Decrement
+      </Button>
+      <Button name={"Reset"} onClick={() => setCount(0)}>
+        Reset
+      </Button>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <form className="userForm">
+        {data.map(user => (
+          <div key={user.id} className="userCard">
+            <p>Name: {user.name}</p>
+            <p>Email: {user.email}</p>
+            <p>Phone: {user.phone}</p>
+            {/* <p>{user.address}</p> */}
+            <p>Location: {user.address?.geo.lat}, {user.address?.geo.lng}</p>
+          </div>
+        ))} 
+      </form>
+      <hr />
+    </div>
+  );
 }
 
-export default App
+export default App;
