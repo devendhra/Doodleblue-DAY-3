@@ -7,9 +7,43 @@ function App() {
   const [genderFilter, setGenderFilter] = useState("all");
   const [changeCount, setChangeCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Helper function to interpret HTTP status codes
+  const getHttpErrorMessage = (status, statusText) => {
+    switch (status) {
+      case 400:
+        return "400 Bad Request: The request was invalid or malformed.";
+      case 401:
+        return "401 Unauthorized: Access denied. Authentication is required.";
+      case 403:
+        return "403 Forbidden: You do not have permission to access this resource.";
+      case 404:
+        return "404 Not Found: The requested API endpoint could not be found.";
+      case 408:
+        return "408 Request Timeout: The server timed out waiting for the request.";
+      case 429:
+        return "429 Too Many Requests: Rate limit exceeded. Please wait a moment and try again.";
+      case 500:
+        return "500 Internal Server Error: The server encountered an unexpected error. Please try again later.";
+      case 502:
+        return "502 Bad Gateway: Received an invalid response from upstream server.";
+      case 503:
+        return "503 Service Unavailable: The API server is temporarily overloaded or down for maintenance.";
+      case 504:
+        return "504 Gateway Timeout: Upstream server failed to respond in time.";
+      default:
+        if (status >= 500) {
+          return `${status} Server Error: The remote server failed to fulfill the request.`;
+        }
+        return `HTTP Error ${status}: ${statusText || "Request failed."}`;
+    }
+  };
 
   const fetchUsers = async (gender = genderFilter) => {
     setLoading(true);
+    setError(null); // Clear previous errors
+
     try {
       const apiUrl =
         gender === "all"
@@ -17,13 +51,29 @@ function App() {
           : `https://randomuser.me/api/?results=6&gender=${gender}`;
 
       const response = await fetch(apiUrl);
+
+      // Check HTTP status code explicitly
+      if (!response.ok) {
+        throw new Error(getHttpErrorMessage(response.status, response.statusText));
+      }
+
       const data = await response.json();
+      console.log(data);
+      // Validate data structure
+      if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+        throw new Error("No user profiles returned from the API.");
+      }
 
       setUsers(data.results);
       setSelectedUser(data.results[0]);
       setChangeCount((prev) => prev + 1);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      if (err.name === "TypeError" && err.message.toLowerCase().includes("fetch")) {
+        setError("Network Error: Unable to connect to the server. Please check your internet connection.");
+      } else {
+        setError(err.message || "An unexpected error occurred while fetching data.");
+      }
     } finally {
       setLoading(false);
     }
@@ -54,6 +104,8 @@ function App() {
     }
   };
 
+  
+
   return (
     <div className="app-container">
       <header className="header">
@@ -61,8 +113,9 @@ function App() {
         <p className="subtitle">
           Fetching live profile images &amp; dynamic data from <code>randomuser.me</code> open API.
         </p>
-
-        
+        <div className="counter-badge">
+          Profile Changes: <strong>{changeCount}</strong>
+        </div>
       </header>
 
       <div className="controls-bar">
@@ -72,6 +125,7 @@ function App() {
             id="filterAll"
             className={`filter-btn ${genderFilter === "all" ? "active" : ""}`}
             onClick={() => handleFilterChange("all")}
+            disabled={loading}
           >
             All
           </button>
@@ -79,6 +133,7 @@ function App() {
             id="filterMale"
             className={`filter-btn ${genderFilter === "male" ? "active" : ""}`}
             onClick={() => handleFilterChange("male")}
+            disabled={loading}
           >
             Male 
           </button>
@@ -86,6 +141,7 @@ function App() {
             id="filterFemale"
             className={`filter-btn ${genderFilter === "female" ? "active" : ""}`}
             onClick={() => handleFilterChange("female")}
+            disabled={loading}
           >
             Female 
           </button>
@@ -98,7 +154,7 @@ function App() {
             onClick={() => fetchUsers(genderFilter)}
             disabled={loading}
           >
-            {loading ? "Fetching..." : " Fetch New Profiles"}
+            {loading ? "Fetching..." : "Fetch New Profiles"}
           </button>
 
           <button
@@ -107,16 +163,51 @@ function App() {
             onClick={handleNextUser}
             disabled={loading || users.length === 0}
           >
-             Next Profile
+            Next Profile
           </button>
         </div>
       </div>
+
+      {/* Inline banner if an error happens while profiles are already displayed */}
+      {error && selectedUser && (
+        <div className="error-banner">
+          <span>⚠️ {error}</span>
+          <div className="error-banner-actions">
+            <button
+              className="retry-btn-small"
+              onClick={() => fetchUsers(genderFilter)}
+            >
+              Retry
+            </button>
+            <button
+              className="dismiss-btn"
+              onClick={() => setError(null)}
+              title="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="content">
         {loading && !selectedUser ? (
           <div className="loading-box">
             <div className="spinner"></div>
             <p>Loading dynamic data from Open API...</p>
+          </div>
+        ) : error && !selectedUser ? (
+          <div className="error-box">
+            <span className="error-icon">⚠️</span>
+            <h3>Failed to Load Profiles</h3>
+            <p className="error-message">{error}</p>
+            <button
+              id="retryBtn"
+              className="primary-btn"
+              onClick={() => fetchUsers(genderFilter)}
+            >
+              Try Again
+            </button>
           </div>
         ) : selectedUser ? (
           <>
@@ -152,28 +243,28 @@ function App() {
 
                   <div className="info-grid">
                     <div className="info-item">
-                      <span className="info-label"> Email</span>
+                      <span className="info-label">Email</span>
                       <span className="info-value" id="selectedUserEmail">
                         {selectedUser.email}
                       </span>
                     </div>
 
                     <div className="info-item">
-                      <span className="info-label"> Phone</span>
+                      <span className="info-label">Phone</span>
                       <span className="info-value" id="selectedUserPhone">
                         {selectedUser.phone}
                       </span>
                     </div>
 
                     <div className="info-item">
-                      <span className="info-label"> City</span>
+                      <span className="info-label">City</span>
                       <span className="info-value" id="selectedUserCity">
                         {selectedUser.location.city}
                       </span>
                     </div>
 
                     <div className="info-item">
-                      <span className="info-label"> Nationality</span>
+                      <span className="info-label">Nationality</span>
                       <span className="info-value">
                         {selectedUser.nat}
                       </span>
@@ -186,7 +277,7 @@ function App() {
                       className="accent-btn"
                       onClick={handleNextUser}
                     >
-                       Click to Switch Profile
+                      Click to Switch Profile
                     </button>
                   </div>
                 </div>
@@ -223,7 +314,7 @@ function App() {
                         </h4>
                         <p className="card-email">{user.email}</p>
                         <span className="card-city">
-                         {user.location.city}, {user.location.country}
+                          {user.location.city}, {user.location.country}
                         </span>
                       </div>
                       {isSelected && <span className="active-pill">Active</span>}
@@ -234,10 +325,17 @@ function App() {
             </section>
           </>
         ) : (
-          <p className="error-message">No user data available. Try fetching again.</p>
+          <div className="error-box">
+            <p className="error-message">No user data available. Try fetching again.</p>
+            <button
+              className="primary-btn"
+              onClick={() => fetchUsers(genderFilter)}
+            >
+              Fetch Profiles
+            </button>
+          </div>
         )}
       </main>
-
     </div>
   );
 }

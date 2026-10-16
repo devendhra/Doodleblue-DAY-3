@@ -17,13 +17,13 @@ body {
   margin-bottom: 20px;
 }
 
-.action-group{  
+.action-group {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.filter-group{
+.filter-group {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -59,7 +59,8 @@ button:hover {
   background: #f1f5f9;
 }
 
-.filter-btn.active, .primary-btn {
+.filter-btn.active,
+.primary-btn {
   background: #2563eb;
   color: #fff;
   border-color: #2563eb;
@@ -122,7 +123,8 @@ button:hover {
   cursor: pointer;
 }
 
-.user-card:hover, .user-card.selected {
+.user-card:hover,
+.user-card.selected {
   border-color: #2563eb;
   background: #eff6ff;
 }
@@ -138,7 +140,8 @@ button:hover {
   font-size: 14px;
 }
 
-.card-email, .card-city {
+.card-email,
+.card-city {
   margin: 2px 0 0;
   font-size: 12px;
   color: #64748b;

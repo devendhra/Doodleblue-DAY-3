@@ -35,11 +35,93 @@ function App() {
     fetchData();
   }, []);
 
+  const [name, setName] = useState();
+
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    age: ""
+  })
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const [show, setShow] = useState(false);
+
+  const handleSubmit = (e) => {
+    setShow(true);
+    e.preventDefault();
+  }
+
   return (
     <div style={{ textAlign: "center", backgroundColor: "lightblue" }}>
       <h1 style={{ color: "blue", backgroundColor: "lightgray" }}>
         Hello World
       </h1>
+
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+
+      <p>{name}</p>
+
+
+      <form>
+        <label>First Name:</label>
+        <input
+          type="text"
+          placeholder="First Name"
+          name="firstName"
+          value={form.firstName}
+          onChange={handleChange} />
+        <br />
+        <label>Last Name:</label>
+        <input
+          type="text"
+          placeholder="Last Name"
+          name="lastName"
+          value={form.lastName}
+          onChange={handleChange} />
+        <br />
+        <label>Email:</label>
+        <input
+          type="text"
+          placeholder="Email"
+          name="email"
+          value={form.email}
+          onChange={handleChange} />
+
+        <br />
+
+      <label>Age:</label>
+      <input
+        type="text"
+        placeholder="Age"
+        name="age"
+        value={form.age}
+        onChange={handleChange} />
+
+        <button onClick={handleSubmit}>Submit</button>
+    </form>
+
+
+    <div id="show">
+      {show && (
+        <div>
+          <p>First Name: {form.firstName}</p>
+          <p>Last Name: {form.lastName}</p>
+          <p>Email: {form.email}</p>
+          <p>Age: {form.age}</p>
+        </div>
+      )}
+    </div>
+
+        
+
+      <hr></hr>
       <label htmlFor="imageToggle"></label>
       <button
         onClick={toggleImage}
@@ -85,7 +167,7 @@ function App() {
             {/* <p>{user.address}</p> */}
             <p>Location: {user.address?.geo.lat}, {user.address?.geo.lng}</p>
           </div>
-        ))} 
+        ))}
       </form>
       <hr />
     </div>
